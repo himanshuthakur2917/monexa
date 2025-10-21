@@ -8,7 +8,7 @@ const Navbar = () => {
     const [isMenuOpen, setisMenuOpen] = useState(false);
     const pathname = usePathname();
     const hideNavbar =
-        pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+        pathname.startsWith("/register") || pathname.startsWith("/login");
 
     const toggleMenu = () => {
         if (isMenuOpen) {

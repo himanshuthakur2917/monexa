@@ -2,44 +2,59 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
-    const token = await getToken({ req: request });
-    const url = request.nextUrl;
-
-    // Public routes that don't require authentication
-    const publicRoutes = ['/sign-in', '/sign-up', '/verify', '/'];
+    const token = await getToken({ 
+        req: request,
+        secret: process.env.JWT_SECRET   
+    });
     
-    // Protected routes that require authentication
-    const protectedRoutes = ['/dashboard'];
+    const url = request.nextUrl;
+    const pathname = url.pathname;
 
-    // Check if the current path is a protected route
-    const isProtectedRoute = protectedRoutes.some(route => 
-        url.pathname.startsWith(route)
-    );
 
-    // Check if the current path is a public route
-    const isPublicRoute = publicRoutes.some(route => 
-        url.pathname.startsWith(route)
-    );
+    const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+    const protectedRoutes = ['/dashboard', '/profile', '/settings', '/admin'];
+    const apiAuthRoutes = ['/api/auth'];
 
-    // If user is not authenticated and tries to access protected route
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+    const isApiAuthRoute = apiAuthRoutes.some(route => pathname.startsWith(route));
+
+
+    if (isApiAuthRoute) {
+        return NextResponse.next();
+    }
+
     if (!token && isProtectedRoute) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl);
     }
 
-    // If user is authenticated and tries to access auth routes
-    if (token && isPublicRoute && url.pathname !== '/') {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+    if (token && isAuthRoute) {
+        const callbackUrl = url.searchParams.get('callbackUrl');
+        const redirectUrl = callbackUrl || '/dashboard';
+        return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
 
-    // Allow the request to continue
-    return NextResponse.next();
+    const response = NextResponse.next();
+    
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+
+    return response;
 }
 
 export const config = {
     matcher: [
-        '/sign-in',
-        '/sign-up',
+        // Include all routes starting with these paths
         '/dashboard/:path*',
-        '/verify/:path*',
+        '/profile/:path*',
+
+        // Also include auth routes to redirect logged-in users
+        '/login',
+        '/register',
+        '/forgot-password',
     ],
 };

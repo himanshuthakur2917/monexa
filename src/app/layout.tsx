@@ -7,7 +7,7 @@ import AuthProvider from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 
 const monexa = localFont({
-  src: './fonts/Figtree-VariableFont_wght.woff',
+  src: '../../public/fonts/Figtree-VariableFont_wght.woff',
   variable : '--font-monexa',
   weight:'100 900'
 })
@@ -26,11 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={monexa.variable}>
       <AuthProvider>
-        <body className="w-full h-full">
+        <body className="w-full h-full bg-black">
         <ThemeProvider attribute='class' defaultTheme="system" enableSystem>
           <div className="relative w-full h-full">
           {/* LiquidEther Background - Full interactive area */}
-          <div className="w-full h-full bg-black z-0">
+          <div className="w-full h-full  z-0">
             {children}
           </div>
           
