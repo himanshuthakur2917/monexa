@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         return NextResponse.json(
             { message : "Error in Log In User", error: error.message },
-            { status: 500 }
+            { status: 400 }
         );
     }
 }

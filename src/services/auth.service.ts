@@ -8,11 +8,10 @@ import { and, eq, gt } from "drizzle-orm";
 
 export const registerUser = async (data:RegisterInput) => { 
     try {
-        const existingUser = await db.query.users.findFirst({
-            where: (fields, { eq }) => eq(fields.email, data.email)
-        })
+        const existingUser = await db.select().from(users).where(eq(users.email,data.email))
+        console.log(existingUser)
 
-        if (existingUser) {
+        if (existingUser[0]) {
             throw new Error("Email already exists")
         }
 
@@ -28,7 +27,8 @@ export const registerUser = async (data:RegisterInput) => {
         return newUser[0]
 
     } catch (error) {
-        throw new Error("Failed to create user :", error.message)
+        console.log(error)
+        throw new Error("Failed to create user :", error)
     }
  }
 

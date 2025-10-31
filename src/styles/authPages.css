@@ -6,6 +6,13 @@
   animation: fadeSlideIn 0.5s ease-out forwards;
 }
 
+.animate-element-backwards {
+  opacity: 1;
+  filter: blur(0px);
+  transform: translateY(0px);
+  animation: fadeSlideOut 0.5s ease-out forwards;
+}
+
 .animate-slide-right {
   opacity: 0;
   filter: blur(2px);
@@ -45,6 +52,19 @@
     opacity: 1;
     filter: blur(0px);
     transform: translateY(0px);
+  }
+}
+
+@keyframes fadeSlideOut {
+  from {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+  to {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(20px);
   }
 }
 

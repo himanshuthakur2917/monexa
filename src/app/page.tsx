@@ -1,9 +1,14 @@
+"use client";
+
 import LiquidEther from "@/components/ui/LiquidEther";
 import GlassSurface from "@/components/ui/GlassSurface";
 import { LayoutTextFlip } from "@/components/ui/layout-text-flip";
 import MagicBento from "@/components/ui/MagicBento";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+    const router = useRouter()
+
     return (
         <div className="relative h-full">
             {/* LiquidEther Container */}
@@ -18,7 +23,7 @@ export default function Home() {
                     iterationsPoisson={32}
                     resolution={0.4}
                     isBounce={true}
-                    autoDemo={true}
+                    autoDemo={false}
                     autoSpeed={0.5}
                     autoIntensity={2.2}
                     takeoverDuration={0.25}
@@ -94,7 +99,7 @@ export default function Home() {
                             <div>Your Finances</div>
                         </h1>
                         <div className="cta h-[3rem] flex justify-center gap-10 mt-15">
-                            <button className="w-[10rem] h-[2.8rem] bg-white text-black font-medium rounded-[100] hover:bg-[#9659ff45] hover:text-white transition-all duration-300 pointer-events-auto">
+                            <button onClick={() => { router.push('/register') }} className="w-[10rem] h-[2.8rem] bg-white text-black font-medium rounded-[100] hover:bg-[#9659ff45] hover:text-white transition-all duration-300 pointer-events-auto">
                                 Explore Now
                             </button>
                             <GlassSurface

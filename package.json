@@ -14,9 +14,9 @@
     "db:drop": "drizzle-kit drop"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.33.3",
     "@radix-ui/react-label": "^2.1.7",
     "@tabler/icons-react": "^3.35.0",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

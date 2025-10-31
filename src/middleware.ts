@@ -1,18 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
-    const token = await getToken({ 
-        req: request,
-        secret: process.env.JWT_SECRET   
-    });
+    const token = request.cookies.get('token')?.value
     
     const url = request.nextUrl;
     const pathname = url.pathname;
 
 
     const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
-    const protectedRoutes = ['/dashboard', '/profile', '/settings', '/admin'];
+    const protectedRoutes = ['/dashboard', '/profile', '/settings'];
     const apiAuthRoutes = ['/api/auth'];
 
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
