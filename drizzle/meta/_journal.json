@@ -8,6 +8,20 @@
       "when": 1761057575028,
       "tag": "0000_true_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762263331162,
+      "tag": "0001_thin_reavers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762263658402,
+      "tag": "0002_curvy_mystique",
+      "breakpoints": true
     }
   ]
 }

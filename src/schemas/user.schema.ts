@@ -1,6 +1,6 @@
-import { emailValidation, nameValidation, passwordValidation } from "@/lib/validators/base.validator";
 import { pgTable, timestamp, varchar, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { accounts } from "./account.schema";
+import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -17,18 +17,9 @@ export const users = pgTable("users", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-
-// Zod schema for insert operations
-export const insertUserSchema = createInsertSchema(users, {
-    firstName: nameValidation,
-    lastName: nameValidation,
-    email: emailValidation,
-    password: passwordValidation,
-});
-
-
-// Zod schema for select operations
-export const selectUserSchema = createSelectSchema(users);
+export const userAccountsRelation = relations(users,({many}) => ({ 
+    accounts:many(accounts)
+ }))
 
 // Types
 export type User = typeof users.$inferSelect;
