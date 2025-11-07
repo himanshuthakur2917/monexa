@@ -1,5 +1,6 @@
 "use client";
 import { SignInPage, Testimonial } from "@/components/ui/sign-in";
+import { useAuth } from "@/context/AuthProvider";
 import { LogInFormData } from "@/interfaces/clientAuth";
 import { getPasswordStrength } from "@/lib/utils/passwordStrength";
 import {
@@ -21,7 +22,8 @@ const sampleTestimonials: Testimonial[] = [
 ];
 
 const LogInPage = () => {
-    const router = useRouter()
+    const router = useRouter();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -66,7 +68,7 @@ const LogInPage = () => {
 
     const passwordStrength = getPasswordStrength(formData.password);
 
-    const handleSignIn = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitSuccess(false);
 
@@ -91,9 +93,13 @@ const LogInPage = () => {
 
         if (!emailError && !passwordError) {
             setIsSubmitting(true);
-            axios.post("/api/auth/login",inputData).then((response) => { if(response.status === 201) router.push('/dashboard') })
+            await axios.post("/api/auth/login", inputData).then((response) => {
+                if (response.status === 201) {
+                    login(response.data.accessToken);
+                    router.push("/dashboard");
+                }
+            });
         }
-
     };
 
     const handleGoogleSignIn = () => {

@@ -1,6 +1,7 @@
 import { JwtData } from "@/interfaces/tokens";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import redisClient from "../redisDB";
 
 export const generateToken = () => {
     const token = crypto.randomBytes(32).toString("base64");
@@ -19,18 +20,40 @@ export const hashToken = (token: string) => {
     return newHashedToken;
 };
 
-export const generateJwtToken = async (tokenPayload: JwtData) => {
-    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
-        expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+export const generateAccessToken = async (tokenPayload: JwtData) => {
+    const token = jwt.sign(tokenPayload, process.env.ACCESS_SECRET!, {
+        expiresIn: process.env.ACCESS_EXPIRES_IN || "15min",
     } as jwt.SignOptions);
     return token;
 };
 
-export const verifyJwtToken = async (token: string) => {
+export const generateRefreshToken = async (tokenPayload: JwtData) => {
+    const token = jwt.sign(tokenPayload, process.env.REFRESH_SECRET!, {
+        expiresIn: process.env.REFRESH_EXPIRES_IN || "3d",
+    } as jwt.SignOptions);
+    return token;
+};
+
+export async function storeRefreshToken(userId: string, token: string) {
+  await redisClient.set(`refresh:${userId}`, token, {EX:7*24*60*60}); // 7 days
+}
+
+export const verifyAccessToken = async (token: string) => {
     try {
-       const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtData
+       const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET!) as JwtData
        return decodedToken.id
     } catch (error) {
-        throw new Error("Invalid token");
+        throw new Error("Invalid token :",error);
+    }
+}
+
+export const verifyRefreshToken = async (token: string) => {
+    try {
+       const decodedToken = jwt.verify(token, process.env.REFRESH_SECRET!) as JwtData
+       const storedToken = await redisClient.get(`refresh:${decodedToken.id}`)
+        if (storedToken !== token) throw new Error("Invalid token");
+       return decodedToken
+    } catch (error) {
+        throw new Error("token is missing :",error);
     }
 }

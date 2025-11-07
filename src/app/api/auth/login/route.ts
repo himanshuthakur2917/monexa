@@ -7,15 +7,20 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const data = loginSchema.parse(body);
 
-        const token = await loginUser(data);
+        const {accessToken,refreshToken} = await loginUser(data);
         
         const response = NextResponse.json(
             { message : "Logged In Successfully" },
             { status: 201 }
         );
 
-        response.cookies.set("token", token, {
-            httpOnly:true
+        response.cookies.set("access_token", accessToken, {
+            httpOnly:true,
+            secure:true
+        })
+        response.cookies.set("refresh_token", refreshToken, {
+            httpOnly:true,
+            secure:true
         })
 
         return response

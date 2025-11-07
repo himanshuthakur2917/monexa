@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import jwt from 'jsonwebtoken'
+import { JwtData } from "@/interfaces/tokens";
+import redisClient from "@/lib/redisDB";
 export async function POST(req: NextRequest) {
     try {
+        const cookie = req.headers.get("cookie");
+        const refreshToken = cookie?.split("refresh_token=")[1];
+        if (!refreshToken)
+            NextResponse.json(
+                { message: "Already Logged out" },
+                { status: 200 }
+            );
+
+        const decodedToken = jwt.decode(refreshToken) as JwtData
+        await redisClient.del(`refresh:${decodedToken.id}`)
+
         const response = NextResponse.json(
-            { message: "Logged out successfully" },
-            { status: 200 }
-        );
+                { message: "Logged out" },
+                { status: 200 }
+            );
 
         // Remove the token cookie
-        response.cookies.set("token","",{
-            httpOnly: true,
-            expires: new Date(0)
-        });
-
+        response.cookies.delete("access_token");
+        response.cookies.delete("refresh_token");
+       
         return response;
-
     } catch (error) {
         return NextResponse.json(
             { message: "Error logging out", error: error.message },
@@ -22,4 +32,3 @@ export async function POST(req: NextRequest) {
         );
     }
 }
-

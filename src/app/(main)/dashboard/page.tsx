@@ -1,15 +1,18 @@
 "use client"
 
+import { useAuth } from '@/context/AuthProvider'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const Page = () => {
   const router = useRouter()
+  const {logout} = useAuth()
 
-  const handleLogOut = () => { 
-    axios.post('/api/auth/logout').then((response) => { console.log(response.data) 
+  const handleLogOut = async () => { 
+    await axios.post('/api/auth/logout').then((response) => { console.log(response.data) 
       if (response.status === 200) {
+        logout()
         router.push('/login')
       }
      })

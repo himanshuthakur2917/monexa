@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { comparePassword, hashPassword } from "@/lib/utils/hash"
-import { generateJwtToken } from "@/lib/utils/token";
+import { generateAccessToken, generateRefreshToken, storeRefreshToken } from "@/lib/utils/token";
 import { LoginInput, RegisterInput } from "@/schemas/auth.schema"
 import {users} from "@/schemas/user.schema"
 import { and, eq, gt } from "drizzle-orm";
@@ -52,9 +52,13 @@ export const loginUser = async (data:LoginInput) => {
         const tokenPayload = {
             id: existingUser.id,
         }
-        const jwtToken = await generateJwtToken(tokenPayload)
 
-        return jwtToken
+        const accessToken = await generateAccessToken(tokenPayload)
+        const refreshToken = await generateRefreshToken(tokenPayload)
+
+        await storeRefreshToken(existingUser.id,refreshToken)
+
+        return {accessToken,refreshToken}
 
     } catch (error) {
         throw new Error("Failed to login user :", error.message)

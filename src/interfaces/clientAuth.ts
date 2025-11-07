@@ -27,6 +27,12 @@ export interface ValidateConfirmPassword {
 }
 
 export interface ValidateName {
-    (name:string): string;
+    (name: string): string;
 }
 
+export interface AuthContextType {
+    accessToken: string | null;
+    login: (token: string) => void;
+    logout: () => Promise<void>;
+    fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+}

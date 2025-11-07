@@ -1,56 +1,36 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 
-export async function middleware(request: NextRequest) {
-    const token = request.cookies.get('token')?.value
-    
-    const url = request.nextUrl;
-    const pathname = url.pathname;
+const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
+export function middleware(req: NextRequest) {
+  const publicPaths = ["/", "/login", "/register"];
 
-    const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
-    const protectedRoutes = ['/dashboard', '/profile', '/settings'];
-    const apiAuthRoutes = ['/api/auth'];
+  // Allow public pages
+  if (publicPaths.includes(req.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
 
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-    const isApiAuthRoute = apiAuthRoutes.some(route => pathname.startsWith(route));
+  // Get Authorization header
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.split(" ")[1];
 
+  // If no token, redirect to login
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
-    if (isApiAuthRoute) {
-        return NextResponse.next();
-    }
-
-    if (!token && isProtectedRoute) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(loginUrl);
-    }
-
-    if (token && isAuthRoute) {
-        const callbackUrl = url.searchParams.get('callbackUrl');
-        const redirectUrl = callbackUrl || '/dashboard';
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
-    }
-
-    const response = NextResponse.next();
-    
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
-
-    return response;
+  try {
+    jwt.verify(token, ACCESS_SECRET);
+    return NextResponse.next();
+  } catch (err) {
+    // Token invalid or expired
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 }
 
+// Apply to all routes except static files and Next internal assets
 export const config = {
-    matcher: [
-        // Include all routes starting with these paths
-        '/dashboard/:path*',
-        '/profile/:path*',
-
-        // Also include auth routes to redirect logged-in users
-        '/login',
-        '/register',
-        '/forgot-password',
-    ],
+  matcher: ["/((?!_next|api|static|favicon.ico).*)"],
 };

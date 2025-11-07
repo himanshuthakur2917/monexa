@@ -1,12 +1,13 @@
 import { db } from "@/lib/db";
-import { verifyJwtToken } from "@/lib/utils/token";
+import { verifyAccessToken } from "@/lib/utils/token";
 import { users } from "@/schemas/user.schema";
 import { eq, getTableColumns } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        const token = req.cookies.get("token")?.value;
+        const authHeader = req.headers.get('authorization')
+        const token = authHeader.split(" ")[1]
         if (!token) {
             return NextResponse.json(
                 { message: "Unauthorized" },
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const userId = await verifyJwtToken(token);
+        const userId = await verifyAccessToken(token);
 
         const { password, ...rest } = getTableColumns(users);
         const [user] = await db
