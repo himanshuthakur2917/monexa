@@ -26,3 +26,7 @@ export const accountRelations = relations(accounts,({one}) => ({
 export const transactionRelations = relations(accounts,({many}) => ({ 
     transactions : many(Transactions)
  }))
+
+
+export type NewAccount = typeof accounts.$inferInsert;
+export type AccountType = (typeof accountType.enumValues)[number]
