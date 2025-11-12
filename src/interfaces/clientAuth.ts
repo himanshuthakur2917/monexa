@@ -31,8 +31,9 @@ export interface ValidateName {
 }
 
 export interface AuthContextType {
-    accessToken: string | null;
-    login: (token: string) => void;
+    isAuthenticated: boolean;
+    isLoading:boolean
+    login: () => void;
     logout: () => Promise<void>;
     fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
 }

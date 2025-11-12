@@ -2,12 +2,12 @@ import { db } from "@/lib/db";
 import { verifyAccessToken } from "@/lib/utils/token";
 import { users } from "@/schemas/user.schema";
 import { eq, getTableColumns } from "drizzle-orm";
+import { jwtDecode } from "jwt-decode";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        const authHeader = req.headers.get('authorization')
-        const token = authHeader.split(" ")[1]
+        const token = req.cookies.get("access_token")?.value;
         if (!token) {
             return NextResponse.json(
                 { message: "Unauthorized" },
@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
         }
 
         const userId = await verifyAccessToken(token);
+
+        const decoded = jwtDecode<{exp:number}>(token)
+        const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
 
         const { password, ...rest } = getTableColumns(users);
         const [user] = await db
@@ -26,10 +29,10 @@ export async function GET(req: NextRequest) {
             .where(eq(users.id, userId))
             .limit(1);
 
-        return NextResponse.json({ message:"User found",User_Data:user }, { status: 200 });
+        return NextResponse.json({ message:"User found",user:{name: `${user.firstName} ${user.lastName}`,email:user.email} , exp:expiresIn }, { status: 200 });
     } catch (error) {
         return NextResponse.json(
-            { message: "Internal server error" },
+            { message: `Internal server error : ${error.message}` },
             { status: 500 }
         );
     }

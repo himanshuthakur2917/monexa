@@ -10,12 +10,11 @@ const Page = () => {
   const {logout} = useAuth()
 
   const handleLogOut = async () => { 
-    await axios.post('/api/auth/logout').then((response) => { console.log(response.data) 
-      if (response.status === 200) {
-        logout()
-        router.push('/login')
-      }
-     })
+    const response = await axios.post('/api/auth/logout')
+    if(response.status === 200){
+      logout()
+      router.push('/login')
+    }
    }
 
   return (

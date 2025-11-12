@@ -53,15 +53,18 @@ export const loginUser = async (data:LoginInput) => {
             id: existingUser.id,
         }
 
+        
         const accessToken = await generateAccessToken(tokenPayload)
         const refreshToken = await generateRefreshToken(tokenPayload)
 
+
         await storeRefreshToken(existingUser.id,refreshToken)
+
 
         return {accessToken,refreshToken}
 
     } catch (error) {
-        throw new Error("Failed to login user :", error.message)
+        throw new Error(error.message)
     }
  }
  

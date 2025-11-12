@@ -21,14 +21,16 @@ export const hashToken = (token: string) => {
 };
 
 export const generateAccessToken = async (tokenPayload: JwtData) => {
-    const token = jwt.sign(tokenPayload, process.env.ACCESS_SECRET!, {
+    const {exp,iat,...cleanPayload} = tokenPayload
+    const token = jwt.sign(cleanPayload, process.env.ACCESS_SECRET!, {
         expiresIn: process.env.ACCESS_EXPIRES_IN || "15min",
     } as jwt.SignOptions);
     return token;
 };
 
 export const generateRefreshToken = async (tokenPayload: JwtData) => {
-    const token = jwt.sign(tokenPayload, process.env.REFRESH_SECRET!, {
+    const {exp,iat,...cleanPayload} = tokenPayload
+    const token = jwt.sign(cleanPayload, process.env.REFRESH_SECRET!, {
         expiresIn: process.env.REFRESH_EXPIRES_IN || "3d",
     } as jwt.SignOptions);
     return token;
@@ -54,6 +56,6 @@ export const verifyRefreshToken = async (token: string) => {
         if (storedToken !== token) throw new Error("Invalid token");
        return decodedToken
     } catch (error) {
-        throw new Error("token is missing :",error);
+        throw new Error(`Verify Token Error : ${error}`);
     }
 }

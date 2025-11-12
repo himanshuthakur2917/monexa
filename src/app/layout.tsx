@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import localFont from "next/font/local";
 import Navbar from "@/components/header/Navbar";
-import {AuthProvider} from "@/context/AuthProvider";
+import { AuthProvider } from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 
 const monexa = localFont({
@@ -23,13 +23,13 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className={monexa.variable}>
-            <AuthProvider>
+            <body className="w-full h-full bg-black">
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
                 >
-                    <body className="w-full h-full bg-black">
+                    <AuthProvider>
                         <div className="relative w-full h-full">
                             {/* LiquidEther Background - Full interactive area */}
                             <div className="w-full h-full  z-0">{children}</div>
@@ -41,9 +41,9 @@ export default function RootLayout({
                                 </div>
                             </header>
                         </div>
-                    </body>
+                    </AuthProvider>
                 </ThemeProvider>
-            </AuthProvider>
+            </body>
         </html>
     );
 }

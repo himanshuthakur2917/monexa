@@ -125,7 +125,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({
             <section className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     <div className="flex flex-col gap-2 w-full ">
-                        <h1 className={`${toggle ? 'animate-element-backwards animate-delay-900':'animate-element animate-delay-100'}    relative mx-auto  text-5xl md:text-3xl font-semibold leading-tight`}>
+                        <h1 className={`${toggle ? 'animate-element-backwards animate-delay-900':'animate-element animate-delay-100'}    relative mx-auto  text-4xl md:text-3xl font-semibold leading-tight`}>
                             {title}
                         </h1>
                         {/* <p className="animate-element animate-delay-200 text-muted-foreground">
@@ -299,7 +299,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({
                                 }}
                                 className="text-violet-400 hover:underline transition-colors"
                             >
-                                Create Account
+                                Log In
                             </a>
                         </p>
                     </div>

@@ -1,6 +1,7 @@
 
 import { loginSchema } from "@/schemas/auth.schema";
 import { loginUser } from "@/services/auth.service";
+import { jwtDecode } from "jwt-decode";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
     try {
@@ -8,19 +9,22 @@ export async function POST(req: NextRequest) {
         const data = loginSchema.parse(body);
 
         const {accessToken,refreshToken} = await loginUser(data);
+
+        
+        
         
         const response = NextResponse.json(
-            { message : "Logged In Successfully" },
+            { message : "Logged In Successfully"},
             { status: 201 }
         );
 
         response.cookies.set("access_token", accessToken, {
             httpOnly:true,
-            secure:true
+            secure:true,
         })
         response.cookies.set("refresh_token", refreshToken, {
             httpOnly:true,
-            secure:true
+            secure:true,
         })
 
         return response

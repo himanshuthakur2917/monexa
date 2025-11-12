@@ -92,13 +92,24 @@ const LogInPage = () => {
         setTouched({ email: true, password: true });
 
         if (!emailError && !passwordError) {
-            setIsSubmitting(true);
-            await axios.post("/api/auth/login", inputData).then((response) => {
+            try {
+                setIsSubmitting(true);
+
+                const response = await axios.post("/api/auth/login", inputData);
+
                 if (response.status === 201) {
-                    login(response.data.accessToken);
+                    // optional small delay to ensure cookies set before navigation
+                    await new Promise((res) => setTimeout(res, 300));
+                    login(); // updates AuthContext
+                    setSubmitSuccess(true);
                     router.push("/dashboard");
                 }
-            });
+            } catch (error) {
+                console.error("Login error:", error);
+                setSubmitSuccess(false);
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -112,7 +123,7 @@ const LogInPage = () => {
     };
 
     const handleCreateAccount = () => {
-        alert("Create Account clicked");
+        router.push("/register");
     };
 
     return (

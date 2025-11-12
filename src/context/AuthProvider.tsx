@@ -1,79 +1,119 @@
 "use client";
 
 import { AuthContextType } from "@/interfaces/clientAuth";
-import { createContext, useContext, useEffect, useState } from "react";
-import {jwtDecode} from "jwt-decode";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const login = (token: string) => setAccessToken(token);
+    const login = () => setIsAuthenticated(true);
+    const router = useRouter();
 
     const logout = async () => {
-        await fetch("/api/auth/logout", { method: "POST" });
-        setAccessToken(null);
+        await axios.post('/api/auth/logout');
+        setIsAuthenticated(false);
     };
 
     const refreshToken = async () => {
         try {
-            const res = await fetch("/api/auth/refresh", { method: "POST" });
-            if (!res.ok) throw new Error("Refresh failed");
-            const data = await res.json();
-            setAccessToken(data.accessToken);
+            const res = await axios.post("/api/auth/refresh");
+            if (res.status !== 200 ) throw new Error("Refresh failed");
+            const data = await res.data
+            if (data.accessToken) setIsAuthenticated(true)
+            else throw new Error("No access token");
             return data.accessToken;
-        } catch {
-            setAccessToken(null);
+        } catch (error) {
+            console.error("Refresh token error:", error);
+            setIsAuthenticated(false);
+            await logout()
+            router.push('/login')
+
             return null;
         }
     };
 
-    interface JWTPayload {
-        exp: number;
-    }
+    
 
     useEffect(() => {
-        if (!accessToken) return;
-        const decoded = jwtDecode<JWTPayload>(accessToken);
-        const expiryTime = decoded.exp * 1000 - Date.now() - 60_000; // refresh 1 min early
-        const timer = setTimeout(refreshToken, Math.max(expiryTime, 5000));
-        return () => clearTimeout(timer);
-    }, [accessToken]);
+       checkAuth()
+    },[isAuthenticated]);
 
-    const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-        if (!accessToken) {
-            const newToken = await refreshToken();
-            if (!newToken) throw new Error("Session expired");
+    const checkAuth = async () => {
+        try {
+            const res = await axios.get('/api/auth/me');
+            if (res.status === 200) {
+                const data = await res.data;
+                setIsAuthenticated(true);
+                // Schedule proactive refresh based on token expiry
+                scheduleTokenRefresh(data.exp); // expiresIn in seconds
+            } else {
+                setIsAuthenticated(false);
+            }
+        } catch(error) {
+            setIsAuthenticated(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const scheduleTokenRefresh = (expiresIn : number) => { 
+        if (refreshTimerRef.current) {
+            clearTimeout(refreshTimerRef.current);
         }
 
+        // Refresh 1 minute before expiry (or halfway through if less than 2 min)
+        const refreshTime = Math.max((expiresIn - 60) * 1000, (expiresIn * 1000) / 2);
+        
+        refreshTimerRef.current = setTimeout(async () => {
+            const res = await refreshToken();
+            if(res.ok) clearTimeout(refreshTimerRef.current)
+        }, refreshTime);
+
+        console.log("Schedule Executed Successfully")
+         }
+
+     const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+        // Cookies are automatically sent with credentials: 'include'
         const res = await fetch(url, {
             ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${accessToken}`,
-            },
+            credentials: 'include',
         });
 
-        // If 401 → refresh and retry once
+        // If 401, try to refresh token via API route (fallback)
         if (res.status === 401) {
-            const newToken = await refreshToken();
-            if (!newToken) throw new Error("Session expired");
-            return fetch(url, {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${newToken}`,
-                },
-            });
+            const refreshSuccess = await refreshToken();
+            
+            if (refreshSuccess) {
+                // Retry original request
+                return fetch(url, {
+                    ...options,
+                    credentials: 'include',
+                });
+            } else {
+                throw new Error("Session expired");
+            }
         }
 
         return res;
     };
 
+    useEffect(() => {
+        return () => {
+            if (refreshTimerRef.current) {
+                clearTimeout(refreshTimerRef.current);
+            }
+        };
+    }, []);
+
     return (
         <AuthContext.Provider
-            value={{ accessToken, login, logout, fetchWithAuth }}
+            value={{isAuthenticated,isLoading, login, logout, fetchWithAuth }}
         >
             {children}
         </AuthContext.Provider>

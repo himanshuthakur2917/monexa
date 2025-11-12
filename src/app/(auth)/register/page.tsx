@@ -214,8 +214,8 @@ const RegisterPage = () => {
         alert("Reset Password clicked");
     };
 
-    const handleCreateAccount = () => {
-        alert("Create Account clicked");
+    const handleLogInAccount = () => {
+        router.push("/login");
     };
     
 
@@ -227,7 +227,7 @@ const RegisterPage = () => {
                 onSignUp={handleSignUp}
                 onGoogleSignUp={handleGoogleSignUp}
                 onResetPassword={handleResetPassword}
-                onLogInAccount={handleCreateAccount}
+                onLogInAccount={handleLogInAccount}
                 onBlur={handleBlur}
                 onChange={handleChange}
                 errors={errors}
