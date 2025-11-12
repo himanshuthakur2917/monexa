@@ -1,5 +1,5 @@
 "use client";
-import { OnBoardingNamePage, SignUpPage, Testimonial } from "@/components/ui/sign-up";
+import { OnBoardingNamePage, SignUpPage, Testimonial } from "@/components/auth/sign-up";
 import { NameFormData, RegisterFormData } from "@/interfaces/clientAuth";
 import { getPasswordStrength } from "@/lib/utils/passwordStrength";
 import {

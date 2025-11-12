@@ -1,5 +1,5 @@
 "use client";
-import { SignInPage, Testimonial } from "@/components/ui/sign-in";
+import { SignInPage, Testimonial } from "@/components/auth/sign-in";
 import { useAuth } from "@/context/AuthProvider";
 import { LogInFormData } from "@/interfaces/clientAuth";
 import { getPasswordStrength } from "@/lib/utils/passwordStrength";
